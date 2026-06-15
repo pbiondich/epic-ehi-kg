@@ -12,68 +12,81 @@
   "columns_discontinued": 41,
   "tables_with_composite_pk": 6740,
   "tables_with_explicit_fk_section": 0,
-  "inferred_reference_edges": 1076,
+  "overflow_families": 92,
+  "overflow_member_tables": 163,
+  "logical_tables": 7634,
+  "resolved_reference_edges": 3863,
   "explicit_reference_edges": 0,
+  "reference_edges_by_method": {
+    "name_stem": 1457,
+    "sole_pk": 1220,
+    "overflow_master": 1186
+  },
+  "reference_edges_by_confidence": {
+    "high": 2677,
+    "medium": 1186
+  },
+  "shared_keys_unresolved": 69,
   "top_referenced_tables": [
+    [
+      "PATIENT",
+      581
+    ],
+    [
+      "PAT_ENC",
+      560
+    ],
+    [
+      "CLAIM_INFO",
+      467
+    ],
+    [
+      "REFERRAL",
+      171
+    ],
+    [
+      "COVERAGE",
+      133
+    ],
+    [
+      "HSP_ACCOUNT",
+      126
+    ],
     [
       "CLARITY_EMP",
       88
     ],
     [
+      "PROBLEM_LIST",
+      68
+    ],
+    [
+      "OTP_INFO",
+      66
+    ],
+    [
+      "EPISODE",
+      57
+    ],
+    [
+      "INVOICE",
+      54
+    ],
+    [
+      "NOTE_ENC_INFO",
+      49
+    ],
+    [
+      "ACCOUNT",
+      47
+    ],
+    [
+      "ORDER_PROC",
+      41
+    ],
+    [
       "HSP_BFH_ACTIVITY",
       38
-    ],
-    [
-      "MYC_MESG",
-      37
-    ],
-    [
-      "ENROLL_INFO",
-      35
-    ],
-    [
-      "CL_QANSWER",
-      34
-    ],
-    [
-      "FIN_ASST_CASE",
-      32
-    ],
-    [
-      "OR_PNDS",
-      29
-    ],
-    [
-      "CL_PAT_EDU_NS",
-      25
-    ],
-    [
-      "MYC_CONVO",
-      23
-    ],
-    [
-      "AUTH_REQUEST",
-      22
-    ],
-    [
-      "BDC_INFO",
-      22
-    ],
-    [
-      "ADVERSE_EVENT_INFO",
-      19
-    ],
-    [
-      "PAT_RELATIONSHIP_LIST",
-      18
-    ],
-    [
-      "IP_FLWSHT_REC",
-      18
-    ],
-    [
-      "VARIANT",
-      18
     ]
   ],
   "top_data_types": [

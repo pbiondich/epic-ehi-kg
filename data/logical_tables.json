@@ -1,0 +1,349 @@
+{
+  "ACCOUNT": [
+    "ACCOUNT_2",
+    "ACCOUNT_3"
+  ],
+  "ACCOUNT_CONTACT": [
+    "ACCOUNT_CONTACT_2"
+  ],
+  "ALT_HISTORY": [
+    "ALT_HISTORY_2",
+    "ALT_HISTORY_3"
+  ],
+  "APPEAL_GRV": [
+    "APPEAL_GRV_2"
+  ],
+  "AP_CLAIM": [
+    "AP_CLAIM_2",
+    "AP_CLAIM_3",
+    "AP_CLAIM_4"
+  ],
+  "AP_CLAIM_IF_INFO": [
+    "AP_CLAIM_IF_INFO_2",
+    "AP_CLAIM_IF_INFO_3",
+    "AP_CLAIM_IF_INFO_4",
+    "AP_CLAIM_IF_INFO_5"
+  ],
+  "AP_CLAIM_PROC": [
+    "AP_CLAIM_PROC_2",
+    "AP_CLAIM_PROC_3",
+    "AP_CLAIM_PROC_4",
+    "AP_CLAIM_PROC_5"
+  ],
+  "AP_CLM_RX": [
+    "AP_CLM_RX_2"
+  ],
+  "AP_CLM_RX_DTL": [
+    "AP_CLM_RX_DTL_2"
+  ],
+  "AUTHORIZATIONS": [
+    "AUTHORIZATIONS_2"
+  ],
+  "AUTH_REQUEST_HX": [
+    "AUTH_REQUEST_HX_2"
+  ],
+  "BILL_SCHED_PMT": [
+    "BILL_SCHED_PMT_2"
+  ],
+  "CAL_COMM_TRACKING": [
+    "CAL_COMM_TRACKING_2"
+  ],
+  "CLAIM_INFO": [
+    "CLAIM_INFO_3"
+  ],
+  "CLARITY_DEP": [
+    "CLARITY_DEP_4"
+  ],
+  "CLARITY_EAP": [
+    "CLARITY_EAP_3",
+    "CLARITY_EAP_5"
+  ],
+  "CLARITY_LOC": [
+    "CLARITY_LOC_2"
+  ],
+  "CLARITY_LWS": [
+    "CLARITY_LWS_3"
+  ],
+  "CLARITY_UCL": [
+    "CLARITY_UCL_2"
+  ],
+  "CLM_VALUES": [
+    "CLM_VALUES_2",
+    "CLM_VALUES_3",
+    "CLM_VALUES_4",
+    "CLM_VALUES_5",
+    "CLM_VALUES_6"
+  ],
+  "CL_OTL": [
+    "CL_OTL_2"
+  ],
+  "COMM_TRACE_INFO": [
+    "COMM_TRACE_INFO_2"
+  ],
+  "COVERAGE": [
+    "COVERAGE_2",
+    "COVERAGE_3",
+    "COVERAGE_4",
+    "COVERAGE_5",
+    "COVERAGE_6"
+  ],
+  "CUST_SERVICE": [
+    "CUST_SERVICE_2"
+  ],
+  "DD_DIA_CMS_START": [
+    "DD_DIA_CMS_START_2"
+  ],
+  "DOCS_RCVD_DETAILS": [
+    "DOCS_RCVD_DETAILS_2",
+    "DOCS_RCVD_DETAILS_3"
+  ],
+  "DOCS_RCVD_MEDS": [
+    "DOCS_RCVD_MEDS_2",
+    "DOCS_RCVD_MEDS_3"
+  ],
+  "DOC_INFORMATION": [
+    "DOC_INFORMATION_2",
+    "DOC_INFORMATION_3"
+  ],
+  "ENROLL_INFO_HX": [
+    "ENROLL_INFO_HX_1"
+  ],
+  "EPA_INFO": [
+    "EPA_INFO_2"
+  ],
+  "EPISODE": [
+    "EPISODE_2"
+  ],
+  "EXT_ELIG_STATUS": [
+    "EXT_ELIG_STATUS_1"
+  ],
+  "HISTOLOGIC_TYPE": [
+    "HISTOLOGIC_TYPE_2"
+  ],
+  "HNO_INFO": [
+    "HNO_INFO_2"
+  ],
+  "HOLOGRAM_SELECTIONS": [
+    "HOLOGRAM_SELECTIONS_2"
+  ],
+  "HSP_ACCOUNT": [
+    "HSP_ACCOUNT_2",
+    "HSP_ACCOUNT_3",
+    "HSP_ACCOUNT_4",
+    "HSP_ACCOUNT_5"
+  ],
+  "HSP_ACCT_EBC": [
+    "HSP_ACCT_EBC_2"
+  ],
+  "HSP_BFH_ACT_DATA": [
+    "HSP_BFH_ACT_DATA_2"
+  ],
+  "HSP_BUCKET": [
+    "HSP_BUCKET_2"
+  ],
+  "HSP_TRANSACTIONS": [
+    "HSP_TRANSACTIONS_2",
+    "HSP_TRANSACTIONS_3"
+  ],
+  "IB_MESSAGES": [
+    "IB_MESSAGES_2",
+    "IB_MESSAGES_3",
+    "IB_MESSAGES_4",
+    "IB_MESSAGES_5"
+  ],
+  "IMPLANT_OT": [
+    "IMPLANT_OT_2",
+    "IMPLANT_OT_3"
+  ],
+  "INFECTION_ABSTNS": [
+    "INFECTION_ABSTNS_2"
+  ],
+  "IP_WORKLIST": [
+    "IP_WORKLIST_2"
+  ],
+  "KIDNEY_RESECTION": [
+    "KIDNEY_RESECTION_2"
+  ],
+  "LYMPH_NODES": [
+    "LYMPH_NODES_2"
+  ],
+  "MARGINS": [
+    "MARGINS_2"
+  ],
+  "METASTASIS": [
+    "METASTASIS_2"
+  ],
+  "MRG_IVLV_TMR": [
+    "MRG_IVLV_TMR_2"
+  ],
+  "MYC_PATIENT": [
+    "MYC_PATIENT_2"
+  ],
+  "NOTE_ENC_INFO": [
+    "NOTE_ENC_INFO_2"
+  ],
+  "NPRGNC_REST_PP": [
+    "NPRGNC_REST_PP_2"
+  ],
+  "NSQIP_INFO": [
+    "NSQIP_INFO_2"
+  ],
+  "OB_HSB_DELIVERY": [
+    "OB_HSB_DELIVERY_2"
+  ],
+  "ORDER_DISP_INFO": [
+    "ORDER_DISP_INFO_2",
+    "ORDER_DISP_INFO_3",
+    "ORDER_DISP_INFO_4"
+  ],
+  "ORDER_MED": [
+    "ORDER_MED_2",
+    "ORDER_MED_3",
+    "ORDER_MED_4",
+    "ORDER_MED_5",
+    "ORDER_MED_6",
+    "ORDER_MED_7",
+    "ORDER_MED_8"
+  ],
+  "ORDER_PROC": [
+    "ORDER_PROC_2",
+    "ORDER_PROC_3",
+    "ORDER_PROC_4",
+    "ORDER_PROC_5",
+    "ORDER_PROC_6",
+    "ORDER_PROC_7"
+  ],
+  "ORDER_RES": [
+    "ORDER_RES_2",
+    "ORDER_RES_3"
+  ],
+  "ORDER_STATUS": [
+    "ORDER_STATUS_2"
+  ],
+  "ORD_AUD_APPT_INFO": [
+    "ORD_AUD_APPT_INFO_2",
+    "ORD_AUD_APPT_INFO_3",
+    "ORD_AUD_APPT_INFO_4",
+    "ORD_AUD_APPT_INFO_5"
+  ],
+  "ORD_AUD_MAMMO_HORMONES": [
+    "ORD_AUD_MAMMO_HORMONES_2",
+    "ORD_AUD_MAMMO_HORMONES_3"
+  ],
+  "ORD_AUD_READING_INFO": [
+    "ORD_AUD_READING_INFO_2"
+  ],
+  "ORD_AUD_REVISED_INFO": [
+    "ORD_AUD_REVISED_INFO_2"
+  ],
+  "ORD_DOSING_PARAMS": [
+    "ORD_DOSING_PARAMS_2"
+  ],
+  "OR_CASE": [
+    "OR_CASE_2",
+    "OR_CASE_3"
+  ],
+  "OR_IMP": [
+    "OR_IMP_2",
+    "OR_IMP_3"
+  ],
+  "OR_LNLG_LASERS": [
+    "OR_LNLG_LASERS_2"
+  ],
+  "OR_LOG": [
+    "OR_LOG_2"
+  ],
+  "OTP_INFO": [
+    "OTP_INFO_1",
+    "OTP_INFO_2",
+    "OTP_INFO_3",
+    "OTP_INFO_4",
+    "OTP_INFO_5"
+  ],
+  "PATIENT": [
+    "PATIENT_2",
+    "PATIENT_3",
+    "PATIENT_4",
+    "PATIENT_5",
+    "PATIENT_6"
+  ],
+  "PAT_ENC": [
+    "PAT_ENC_2",
+    "PAT_ENC_3",
+    "PAT_ENC_4",
+    "PAT_ENC_5",
+    "PAT_ENC_6",
+    "PAT_ENC_7",
+    "PAT_ENC_8"
+  ],
+  "PAT_ENC_ANTICOAG": [
+    "PAT_ENC_ANTICOAG_2"
+  ],
+  "PAT_ENC_HSP": [
+    "PAT_ENC_HSP_2"
+  ],
+  "PB_DTL_TX": [
+    "PB_DTL_TX_2"
+  ],
+  "PRE_AR_CHG": [
+    "PRE_AR_CHG_2",
+    "PRE_AR_CHG_3"
+  ],
+  "PR_EST_INFO": [
+    "PR_EST_INFO_2",
+    "PR_EST_INFO_3"
+  ],
+  "REFERRAL": [
+    "REFERRAL_2",
+    "REFERRAL_3",
+    "REFERRAL_4",
+    "REFERRAL_5",
+    "REFERRAL_6"
+  ],
+  "RENAL_SINUS": [
+    "RENAL_SINUS_2"
+  ],
+  "RES_REPEAT_COMP": [
+    "RES_REPEAT_COMP_2"
+  ],
+  "SPEC_LATERALITY": [
+    "SPEC_LATERALITY_2"
+  ],
+  "STAGE_1": [
+    "STAGE_1_2"
+  ],
+  "STAGE_II": [
+    "STAGE_II_2"
+  ],
+  "STAGE_III": [
+    "STAGE_III_2"
+  ],
+  "STAGE_IV": [
+    "STAGE_IV_2"
+  ],
+  "STAGE_V": [
+    "STAGE_V_2"
+  ],
+  "SVC_LN_INFO": [
+    "SVC_LN_INFO_2",
+    "SVC_LN_INFO_3"
+  ],
+  "TIMEOUT_ANSWERS": [
+    "TIMEOUT_ANSWERS_2"
+  ],
+  "TMR_SZ_GD": [
+    "TMR_SZ_GD_2"
+  ],
+  "TUMOR_FOCALITY": [
+    "TUMOR_FOCALITY_2"
+  ],
+  "TUMOR_LATERALITY": [
+    "TUMOR_LATERALITY_2"
+  ],
+  "TUMOR_SITE": [
+    "TUMOR_SITE_2"
+  ],
+  "TUMOR_SIZE": [
+    "TUMOR_SIZE_2"
+  ]
+}

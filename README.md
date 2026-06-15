@@ -29,9 +29,10 @@ statistics.
 ## Graph model
 
 ```
-(:Table)-[:hasColumn / ehi:hasPrimaryKeyColumn]->(:Column)
+(:Table)-[ehi:hasColumn / ehi:hasPrimaryKeyColumn]->(:Column)
 (:Column)-[ehi:inTable]->(:Table)
-(:Column)-[ehi:references]->(:Table)        # foreign-key-like; mostly inferred
+(:Column)-[ehi:references]->(:Table)        # foreign-key-like; inferred (see below)
+(:Table)-[ehi:overflowOf]->(:Table)         # BASE_2/BASE_3/... -> logical base
 ```
 
 Column nodes carry: `ordinal`, `dataType`, `discontinued`, `isPrimaryKey`,
@@ -42,11 +43,52 @@ therefore **not comparable across installations** without local mapping — the
 same standard-container / local-semantics boundary that makes cross-site Epic
 research hard, surfaced as a machine-readable flag.
 
+Every table also carries `ehi:logicalTable` (its overflow-family base), every
+inferred reference carries `ehi:referenceMethod` + `ehi:referenceConfidence`, and
+columns whose key is a generic shared identifier are flagged `ehi:sharedKey`.
+
+## Reference resolution (join graph)
+
+Epic's EHI pages contain **no explicit foreign-key section**, so reference edges
+must be inferred. A naive "column name == some table's sole-column PK" rule fails
+two ways, both now handled:
+
+1. **Overflow families.** A logical entity is split across `BASE`, `BASE_2`,
+   `BASE_3`, … sharing one key (`PATIENT`/`PATIENT_2…6`, `PAT_ENC`/`PAT_ENC_2…8`).
+   These are collapsed into one logical entity via `ehi:overflowOf` /
+   `ehi:logicalTable` (92 families, 163 member tables), and intra-family / self
+   edges are suppressed.
+2. **Generic shared keys.** Identifiers like `RESULT_ID`, `RECORD_ID`,
+   `ORDER_ID`, `TX_ID` are the sole PK of dozens of co-equal tables — there is no
+   single master. These are **left unresolved** (recorded in
+   `data/shared_keys.json`, flagged `ehi:sharedKey`) rather than guessed.
+
+For every other identifier the builder picks one canonical **master** table and
+tags the edge with a method and confidence:
+
+| method | confidence | rule |
+|---|---|---|
+| `sole_pk` | high | the key has exactly one logical sole-PK owner |
+| `name_stem` | high | an owner's name equals the key's stem (`PAT_ENC_CSN_ID` → `PAT_ENC`) |
+| `overflow_master` | medium | exactly one *name-related* owner itself carries overflow tables (`PAT_ID` → `PATIENT`) |
+
+This yields **3,863 reference edges** (vs. 1,076 in the original conservative
+build), and the marquee hubs now surface correctly — top targets are `PATIENT`
+(581), `PAT_ENC` (560), `CLAIM_INFO` (467), `REFERRAL`, `COVERAGE`,
+`HSP_ACCOUNT`. Edges are written to `data/references.jsonl` for direct querying.
+
+The pass is deliberately **conservative — it under-claims rather than emit wrong
+edges.** Use `--no-resolve-references` to fall back to the original single-PK
+inference.
+
 ## Rebuild
 
 ```bash
 pip install -r requirements.txt
 python build_kg.py --src /path/to/Epic_EHI_Tables.zip --out .
+
+# re-resolve / iterate without re-parsing the HTML zip:
+python build_kg.py --from-schema data/schema.jsonl --out .
 ```
 
 Re-run against a newer EHI export to get a diffable schema history across Epic
@@ -72,16 +114,15 @@ all structural facts and the org-specific flags.
 
 ## Known limitations
 
-- **Reference edges are conservative.** Epic's EHI pages rarely include an
-  explicit foreign-key section (0 in this build), so `ehi:references` edges are
-  *inferred* by matching a column name to another table's **single-column**
-  primary key. Two consequences: (1) references into **composite-key** tables
-  (the majority — 6,740 of 7,797 tables have multi-column keys) are not captured,
-  and (2) where Epic uses overflow tables that share one key (`PATIENT`,
-  `PATIENT_2`, `PATIENT_3`, …), the key is ambiguous and is intentionally
-  dropped, which suppresses marquee hubs like `PATIENT`. A better reference model
-  would collapse `_2`/`_3` overflow families into one logical entity and resolve
-  composite keys — a natural next step.
+- **Reference edges remain inferred, not authoritative.** Epic ships no explicit
+  foreign keys, so all `ehi:references` edges are derived (see *Reference
+  resolution* above) and should be read together with their
+  `ehi:referenceConfidence`. Medium-confidence (`overflow_master`) edges are
+  heuristic; generic shared keys are intentionally left unresolved.
+- **Composite-key targets** (a column set referencing a multi-column PK) are not
+  emitted as edges. The common, useful case — a detail table whose *leading* key
+  column points at a master entity — is captured, because that leading column
+  resolves to the master like any other identifier.
 - Descriptions are normalized to single-line whitespace.
-```
-```
+- Released-only schema: no site customizations, and no Chronicles INI/item
+  lineage (those live only in the gated Clarity Data Handbook).

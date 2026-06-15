@@ -5,12 +5,25 @@ build_kg.py
 Parse Epic's EHI Export documentation (the open.epic "DocGen" HTML set) into a
 structured schema dataset and a knowledge graph.
 
-INPUT   a .zip (or directory) of EHI table .htm files.
-OUTPUT  data/schema.jsonl     one JSON record per table (full, incl. descriptions)
-        data/meta.json        provenance: source, version, counts
-        data/stats.json       computed statistics
-        graph/epic_ehi.ttl    RDF / Turtle knowledge graph
-        graph/epic_ehi.graphml property graph (Neo4j / Gephi / Cytoscape)
+INPUT   a .zip (or directory) of EHI table .htm files, OR (--from-schema) an
+        existing data/schema.jsonl to re-resolve without re-parsing the HTML.
+OUTPUT  data/schema.jsonl       one JSON record per table (full, incl. descriptions)
+        data/meta.json          provenance: source, version, counts
+        data/stats.json         computed statistics
+        data/references.jsonl   resolved reference edges (table,column,references,method,confidence)
+        data/logical_tables.json overflow families: base -> [BASE_2, BASE_3, ...]
+        data/shared_keys.json   generic keys deliberately left unresolved (+ candidate owners)
+        graph/epic_ehi.ttl      RDF / Turtle knowledge graph
+        graph/epic_ehi.graphml  property graph (Neo4j / Gephi / Cytoscape)
+
+REFERENCE RESOLUTION (on by default; --no-resolve-references for the old behavior)
+----------------------------------------------------------------------------------
+Epic's pages have no explicit FK section. This builder collapses BASE/BASE_2/...
+overflow families into one logical entity (ehi:overflowOf / ehi:logicalTable) and
+resolves each identifier column to a single canonical master table where one is
+defensible, tagging every edge with ehi:referenceMethod + ehi:referenceConfidence.
+Generic shared keys (RESULT_ID, RECORD_ID, ...) are left unresolved (ehi:sharedKey)
+rather than guessed. See resolve_references() and README.
 
 PROVENANCE / LICENSING
 ----------------------
@@ -28,6 +41,7 @@ USAGE
     pip install beautifulsoup4 lxml networkx
     python build_kg.py --src /path/to/Epic_EHI_Tables.zip --out .
     python build_kg.py --src ./pages_dir --out . --no-descriptions
+    python build_kg.py --from-schema data/schema.jsonl --out .   # re-resolve, no zip
 """
 from __future__ import annotations
 import argparse, json, re, sys, zipfile, datetime
@@ -192,15 +206,130 @@ def c_iri(table, col): return f"<{BASE}/column/{table}/{col}>"
 
 
 # --------------------------------------------------------------------------- #
+# Reference resolution
+# --------------------------------------------------------------------------- #
+# Epic's EHI pages carry no explicit foreign-key section, and a naive
+# "column name == some table's sole-column PK" rule mis-fires for two reasons:
+#   1. Overflow families. A logical entity is split across BASE, BASE_2, BASE_3,
+#      ... that share one key (PATIENT/PATIENT_2.., PAT_ENC/PAT_ENC_2..). Each
+#      member claims the same sole PK, so the key looks "ambiguous" and the
+#      marquee hub (PATIENT, PAT_ENC) gets dropped entirely.
+#   2. Generic shared keys. Identifiers like RESULT_ID, RECORD_ID, ORDER_ID and
+#      TX_ID are the sole PK of dozens of co-equal tables; there is no single
+#      master to point at.
+# This pass collapses (1) into one logical entity per family and, for (2),
+# under-claims: it emits an edge only when a single master is defensible, and
+# records the rest in shared_keys rather than guessing.
+OVERFLOW_RE = re.compile(r"^(.*)_(\d+)$")
+ID_SUFFIXES = ("_CSN_ID", "_ID")
+
+
+def _pk_columns(rec):
+    return [p["column"] for p in sorted(rec["primary_key"],
+                                        key=lambda x: x["ordinal"] or 0)]
+
+
+def _stems(key):
+    """Identifier name stems, e.g. PAT_ENC_CSN_ID -> {PAT_ENC, PAT_ENC_CSN}."""
+    return {key[:-len(s)] for s in ID_SUFFIXES if key.endswith(s)}
+
+
+def _related(stem, table):
+    return table == stem or table.startswith(stem) or stem.startswith(table)
+
+
+def overflow_families(table_names):
+    """base_table -> [overflow members BASE_2, BASE_3, ...] (base must exist)."""
+    fam = defaultdict(list)
+    for n in table_names:
+        m = OVERFLOW_RE.match(n)
+        if m and m.group(1) in table_names:
+            fam[m.group(1)].append(n)
+    return {b: sorted(ms, key=lambda x: int(OVERFLOW_RE.match(x).group(2)))
+            for b, ms in fam.items()}
+
+
+def logical_base(name, table_names):
+    m = OVERFLOW_RE.match(name)
+    return m.group(1) if (m and m.group(1) in table_names) else name
+
+
+def resolve_references(records):
+    """Resolve column references to a canonical 'master' table per identifier.
+
+    For each column that is a *sole* primary key somewhere, choose the master
+    (after collapsing overflow families to one logical owner):
+        * exactly one logical owner            -> high   (sole_pk)
+        * the owner whose name == the key stem  -> high   (name_stem)
+        * exactly one name-related owner that
+          itself carries overflow tables        -> medium (overflow_master)
+        * otherwise                             -> shared/generic key, no edge
+    A column C in table T references master(K) when C.name == K and the master's
+    logical family differs from T's (no intra-family / self edges).
+
+    Returns (edges, shared_keys, families, logical_of) where
+        edges       = [(table, column, target, method, confidence), ...]
+        shared_keys = {key: [logical owner tables]}  (deliberately unresolved)
+    """
+    table_names = {r["table"] for r in records}
+    families = overflow_families(table_names)
+    has_overflow = set(families)
+    logical_of = {n: logical_base(n, table_names) for n in table_names}
+
+    sole = defaultdict(set)                       # key -> {logical owner tables}
+    for r in records:
+        if len(r["primary_key"]) == 1:
+            sole[_pk_columns(r)[0]].add(logical_of[r["table"]])
+
+    master, method, confidence, shared_keys = {}, {}, {}, {}
+    for key, owners in sole.items():
+        owners = set(owners)
+        if len(owners) == 1:
+            master[key] = next(iter(owners))
+            method[key], confidence[key] = "sole_pk", "high"
+            continue
+        stem_hit = [o for o in owners if o in _stems(key)]
+        if len(stem_hit) == 1:
+            master[key] = stem_hit[0]
+            method[key], confidence[key] = "name_stem", "high"
+            continue
+        ov = [o for o in owners
+              if o in has_overflow and any(_related(s, o) for s in _stems(key))]
+        if len(ov) == 1:
+            master[key] = ov[0]
+            method[key], confidence[key] = "overflow_master", "medium"
+            continue
+        shared_keys[key] = sorted(owners)          # under-claim, do not guess
+
+    edges = []
+    for r in records:
+        tbase = logical_of[r["table"]]
+        for c in r["columns"]:
+            tgt = master.get(c["name"])
+            if tgt and tgt != tbase:
+                edges.append((r["table"], c["name"], tgt,
+                              method[c["name"]], confidence[c["name"]]))
+    return edges, shared_keys, families, logical_of
+
+
+# --------------------------------------------------------------------------- #
 # Main
 # --------------------------------------------------------------------------- #
 def main():
     ap = argparse.ArgumentParser(description="Build Epic EHI schema dataset + KG.")
-    ap.add_argument("--src", required=True, type=Path, help=".zip or directory of EHI .htm pages")
+    ap.add_argument("--src", type=Path, help=".zip or directory of EHI .htm pages")
+    ap.add_argument("--from-schema", type=Path,
+                    help="rebuild graphs/stats from an existing data/schema.jsonl "
+                         "(skips HTML parsing; lets you re-resolve without the zip)")
     ap.add_argument("--out", default=Path("."), type=Path, help="output repo root")
     ap.add_argument("--no-descriptions", action="store_true",
                     help="omit Epic's prose descriptions from .ttl and .graphml")
+    ap.add_argument("--no-resolve-references", action="store_true",
+                    help="skip the reference-resolution pass; emit only the legacy "
+                         "conservative single-column-PK edges")
     args = ap.parse_args()
+    if not args.src and not args.from_schema:
+        ap.error("provide --src (zip/dir of .htm) or --from-schema (existing schema.jsonl)")
 
     global PARSER
     try:
@@ -213,37 +342,69 @@ def main():
     data_dir.mkdir(parents=True, exist_ok=True)
     graph_dir.mkdir(parents=True, exist_ok=True)
 
-    prov = provenance(args.src)
+    # ---- provenance (carried over from existing meta.json when rebuilding) ----
+    if args.src:
+        prov = provenance(args.src)
+    else:
+        prov = {"source": "https://open.epic.com/EHITables (EHI Export Specification)",
+                "docgen_folder": None, "docgen_token": None,
+                "docgen_timestamp": None, "released_version": None}
+        existing = data_dir / "meta.json"
+        if existing.exists():
+            old = json.loads(existing.read_text(encoding="utf-8"))
+            for k in ("source", "docgen_folder", "docgen_token",
+                      "docgen_timestamp", "released_version"):
+                if old.get(k):
+                    prov[k] = old[k]
 
-    # ---- parse all pages, stream to schema.jsonl ----
-    records = []
-    with (data_dir / "schema.jsonl").open("w", encoding="utf-8") as fh:
-        for i, (name, html_text) in enumerate(iter_pages(args.src), 1):
-            rec = parse_page(name, html_text)
-            records.append(rec)
-            fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
-            if i % 1000 == 0:
-                print(f"  parsed {i} tables ...", flush=True)
-    print(f"Parsed {len(records)} tables.")
+    # ---- obtain records: parse HTML pages, or load an existing schema.jsonl ----
+    if args.from_schema:
+        with args.from_schema.open(encoding="utf-8") as fh:
+            records = [json.loads(line) for line in fh if line.strip()]
+        print(f"Loaded {len(records)} tables from {args.from_schema}.")
+    else:
+        records = []
+        with (data_dir / "schema.jsonl").open("w", encoding="utf-8") as fh:
+            for i, (name, html_text) in enumerate(iter_pages(args.src), 1):
+                rec = parse_page(name, html_text)
+                records.append(rec)
+                fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
+                if i % 1000 == 0:
+                    print(f"  parsed {i} tables ...", flush=True)
+        print(f"Parsed {len(records)} tables.")
 
-    # ---- indexes for FK inference ----
-    # single-column PK ownership, unambiguous only
-    pk_cols = defaultdict(list)            # colname -> [tables for which it is the sole PK]
     table_names = {r["table"] for r in records}
-    for r in records:
-        if len(r["primary_key"]) == 1:
-            pk_cols[r["primary_key"][0]["column"]].append(r["table"])
-    pk_owner = {col: tbls[0] for col, tbls in pk_cols.items() if len(tbls) == 1}
-
-    # ---- build edges + stats ----
-    type_counter = Counter()
-    n_columns = n_org = n_disc = 0
-    composite_pk = 0
-    inferred_edges = []      # (table, column, target)
-    explicit_edges = []      # (table, column?, target)
-    inbound = Counter()
     pk_set = {(r["table"], pk["column"]) for r in records for pk in r["primary_key"]}
 
+    # ---- references ----
+    if args.no_resolve_references:
+        # legacy conservative inference: unambiguous single-column PK ownership only
+        pk_cols = defaultdict(list)
+        for r in records:
+            if len(r["primary_key"]) == 1:
+                pk_cols[r["primary_key"][0]["column"]].append(r["table"])
+        pk_owner = {c: t[0] for c, t in pk_cols.items() if len(t) == 1}
+        ref_edges = [(r["table"], c["name"], pk_owner[c["name"]], "legacy_sole_pk", "low")
+                     for r in records for c in r["columns"]
+                     if pk_owner.get(c["name"]) and pk_owner[c["name"]] != r["table"]]
+        shared_keys = {}
+        families = overflow_families(table_names)
+        logical_of = {n: logical_base(n, table_names) for n in table_names}
+    else:
+        ref_edges, shared_keys, families, logical_of = resolve_references(records)
+
+    # ---- explicit FK rows (rare; none in the current EHI release) ----
+    explicit_edges = []      # (table, column?, target)
+    for r in records:
+        for fkrow in r["foreign_keys"]:
+            for v in (fkrow.values() if isinstance(fkrow, dict) else []):
+                for tok in re.findall(r"[A-Z][A-Z0-9_]{2,}", str(v)):
+                    if tok in table_names and tok != r["table"]:
+                        explicit_edges.append((r["table"], None, tok))
+
+    # ---- column-level statistics ----
+    type_counter = Counter()
+    n_columns = n_org = n_disc = composite_pk = 0
     for r in records:
         if len(r["primary_key"]) > 1:
             composite_pk += 1
@@ -252,18 +413,18 @@ def main():
             type_counter[c["type"]] += 1
             n_org += bool(c["org_specific"])
             n_disc += bool(c["discontinued"])
-            tgt = pk_owner.get(c["name"])
-            if tgt and tgt != r["table"]:
-                inferred_edges.append((r["table"], c["name"], tgt))
-                inbound[tgt] += 1
-        # explicit FK rows: keep any value that names a known table
-        for fkrow in r["foreign_keys"]:
-            for v in (fkrow.values() if isinstance(fkrow, dict) else []):
-                for tok in re.findall(r"[A-Z][A-Z0-9_]{2,}", str(v)):
-                    if tok in table_names and tok != r["table"]:
-                        explicit_edges.append((r["table"], None, tok))
-                        inbound[tok] += 1
 
+    inbound = Counter()
+    by_method = Counter()
+    by_conf = Counter()
+    for (_t, _c, tgt, meth, conf) in ref_edges:
+        inbound[tgt] += 1
+        by_method[meth] += 1
+        by_conf[conf] += 1
+    for (_t, _c, tgt) in explicit_edges:
+        inbound[tgt] += 1
+
+    member_tables = sum(len(v) for v in families.values())
     stats = {
         "tables": len(records),
         "columns_total": n_columns,
@@ -277,37 +438,60 @@ def main():
         "columns_discontinued": n_disc,
         "tables_with_composite_pk": composite_pk,
         "tables_with_explicit_fk_section": sum(1 for r in records if r["foreign_keys"]),
-        "inferred_reference_edges": len(inferred_edges),
+        "overflow_families": len(families),
+        "overflow_member_tables": member_tables,
+        "logical_tables": len(records) - member_tables,
+        "resolved_reference_edges": len(ref_edges),
         "explicit_reference_edges": len(explicit_edges),
+        "reference_edges_by_method": dict(by_method.most_common()),
+        "reference_edges_by_confidence": dict(by_conf.most_common()),
+        "shared_keys_unresolved": len(shared_keys),
         "top_referenced_tables": inbound.most_common(15),
         "top_data_types": type_counter.most_common(12),
     }
     (data_dir / "stats.json").write_text(json.dumps(stats, indent=2), encoding="utf-8")
 
+    # ---- reference side-cars (diffable, queryable without the full graph) ----
+    with (data_dir / "references.jsonl").open("w", encoding="utf-8") as fh:
+        for (t, c, tgt, meth, conf) in ref_edges:
+            fh.write(json.dumps({"table": t, "column": c, "references": tgt,
+                                 "method": meth, "confidence": conf},
+                                ensure_ascii=False) + "\n")
+    (data_dir / "shared_keys.json").write_text(
+        json.dumps(shared_keys, indent=2), encoding="utf-8")
+    (data_dir / "logical_tables.json").write_text(
+        json.dumps(dict(sorted(families.items())), indent=2), encoding="utf-8")
+
     meta = {**prov,
             "parsed_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
             "n_tables": len(records), "n_columns": n_columns,
-            "descriptions_in_graph": not args.no_descriptions}
+            "descriptions_in_graph": not args.no_descriptions,
+            "references_resolved": not args.no_resolve_references}
     (data_dir / "meta.json").write_text(json.dumps(meta, indent=2), encoding="utf-8")
 
     # ---- RDF / Turtle ----
-    write_turtle(graph_dir / "epic_ehi.ttl", records, pk_set,
-                 inferred_edges, explicit_edges, prov, not args.no_descriptions)
+    write_turtle(graph_dir / "epic_ehi.ttl", records, pk_set, ref_edges,
+                 explicit_edges, families, logical_of, shared_keys, prov,
+                 not args.no_descriptions)
 
     # ---- GraphML ----
-    write_graphml(graph_dir / "epic_ehi.graphml", records, pk_set,
-                  inferred_edges, explicit_edges, not args.no_descriptions)
+    write_graphml(graph_dir / "epic_ehi.graphml", records, pk_set, ref_edges,
+                  explicit_edges, families, logical_of, shared_keys,
+                  not args.no_descriptions)
 
     print("\n=== SUMMARY ===")
     print(json.dumps(stats, indent=2))
 
 
-def write_turtle(path, records, pk_set, inferred_edges, explicit_edges, prov, with_desc):
+def write_turtle(path, records, pk_set, ref_edges, explicit_edges,
+                 families, logical_of, shared_keys, prov, with_desc):
     edges_by_col = defaultdict(list)
-    for (t, c, tgt, inferred) in (
-            [(t, c, tgt, True) for (t, c, tgt) in inferred_edges] +
-            [(t, c, tgt, False) for (t, c, tgt) in explicit_edges if c]):
-        edges_by_col[(t, c)].append((tgt, inferred))
+    for (t, c, tgt, meth, conf) in ref_edges:
+        edges_by_col[(t, c)].append((tgt, meth, conf))
+    for (t, c, tgt) in explicit_edges:        # table-level (rare)
+        if c:
+            edges_by_col[(t, c)].append((tgt, "explicit_fk", "high"))
+    shared = set(shared_keys)
 
     with path.open("w", encoding="utf-8") as f:
         f.write(f"""@prefix ehi:  <{EHI}> .
@@ -318,16 +502,23 @@ def write_turtle(path, records, pk_set, inferred_edges, explicit_edges, prov, wi
 <{BASE}/dataset> a ehi:Dataset ;
     dct:source <https://open.epic.com/EHITables> ;
     dct:hasVersion {ttl_str((prov.get('docgen_token') or '') + ' / released ' + (prov.get('released_version') or 'unknown'))} ;
-    rdfs:comment "Knowledge graph derived from Epic's EHI Export Specification (open.epic DocGen export). Structure is factual schema metadata; descriptions are Epic's text." .
+    rdfs:comment "Knowledge graph derived from Epic's EHI Export Specification (open.epic DocGen export). Structure is factual schema metadata; descriptions are Epic's text. Reference edges and overflow-family grouping are INFERRED -- inspect ehi:referenceMethod / ehi:referenceConfidence." .
 
 ehi:Table a rdfs:Class . ehi:Column a rdfs:Class .
 ehi:inTable a rdfs:Property . ehi:hasColumn a rdfs:Property .
 ehi:references a rdfs:Property . ehi:dataType a rdfs:Property .
+ehi:overflowOf a rdfs:Property . ehi:logicalTable a rdfs:Property .
+ehi:referenceMethod a rdfs:Property . ehi:referenceConfidence a rdfs:Property .
+ehi:sharedKey a rdfs:Property .
 
 """)
         for r in records:
             t = r["table"]
+            base = logical_of.get(t, t)
             f.write(f"{t_iri(t)} a ehi:Table ; rdfs:label {ttl_str(t)}")
+            f.write(f" ;\n    ehi:logicalTable {ttl_str(base)}")
+            if base != t:
+                f.write(f" ;\n    ehi:overflowOf {t_iri(base)}")
             if with_desc and r["description"]:
                 f.write(f" ;\n    rdfs:comment {ttl_str(r['description'])}")
             for pk in r["primary_key"]:
@@ -341,8 +532,12 @@ ehi:references a rdfs:Property . ehi:dataType a rdfs:Property .
                 f.write(f"    ehi:mayContainOrgSpecificValues {'true' if c['org_specific'] else 'false'}")
                 if (t, c["name"]) in pk_set:
                     f.write(" ;\n    ehi:isPrimaryKey true")
-                for tgt, inferred in edges_by_col.get((t, c["name"]), []):
-                    f.write(f" ;\n    ehi:references {t_iri(tgt)} ;\n    ehi:referenceInferred {'true' if inferred else 'false'}")
+                if c["name"] in shared:
+                    f.write(" ;\n    ehi:sharedKey true")
+                for tgt, meth, conf in edges_by_col.get((t, c["name"]), []):
+                    f.write(f" ;\n    ehi:references {t_iri(tgt)} ;\n"
+                            f"    ehi:referenceMethod {ttl_str(meth)} ;\n"
+                            f"    ehi:referenceConfidence {ttl_str(conf)}")
                 if with_desc and c["description"]:
                     f.write(f" ;\n    rdfs:comment {ttl_str(c['description'])}")
                 f.write(" .\n")
@@ -350,28 +545,45 @@ ehi:references a rdfs:Property . ehi:dataType a rdfs:Property .
     print(f"Wrote {path}")
 
 
-def write_graphml(path, records, pk_set, inferred_edges, explicit_edges, with_desc):
+def write_graphml(path, records, pk_set, ref_edges, explicit_edges,
+                  families, logical_of, shared_keys, with_desc):
     import networkx as nx
     G = nx.DiGraph()
+    shared = set(shared_keys)
     for r in records:
-        tid = "T:" + r["table"]
-        G.add_node(tid, kind="table", label=r["table"],
+        t = r["table"]
+        tid = "T:" + t
+        base = logical_of.get(t, t)
+        G.add_node(tid, kind="table", label=t, logical_table=base,
+                   is_overflow=(base != t),
                    description=(r["description"] or "") if with_desc else "")
         for c in r["columns"]:
-            cid = f"C:{r['table']}.{c['name']}"
-            G.add_node(cid, kind="column", label=c["name"], table=r["table"],
+            cid = f"C:{t}.{c['name']}"
+            G.add_node(cid, kind="column", label=c["name"], table=t,
                        data_type=c["type"] or "", ordinal=c["ordinal"] or 0,
                        discontinued=bool(c["discontinued"]),
                        org_specific=bool(c["org_specific"]),
-                       is_primary_key=(r["table"], c["name"]) in pk_set,
+                       is_primary_key=(t, c["name"]) in pk_set,
+                       shared_key=c["name"] in shared,
                        description=(c["description"] or "") if with_desc else "")
-            G.add_edge(tid, cid, rel="HAS_COLUMN")
-    for (t, c, tgt) in inferred_edges:
-        G.add_edge(f"C:{t}.{c}", "T:" + tgt, rel="REFERENCES", inferred=True)
+            G.add_edge(tid, cid, rel="HAS_COLUMN", method="", confidence="")
+    # overflow member -> logical base
+    for base, members in families.items():
+        for m in members:
+            if ("T:" + m) in G and ("T:" + base) in G:
+                G.add_edge("T:" + m, "T:" + base, rel="OVERFLOW_OF",
+                           method="", confidence="")
+    # resolved column -> master references
+    for (t, c, tgt, meth, conf) in ref_edges:
+        src = f"C:{t}.{c}"
+        if src in G and ("T:" + tgt) in G:
+            G.add_edge(src, "T:" + tgt, rel="REFERENCES",
+                       method=meth, confidence=conf)
     for (t, c, tgt) in explicit_edges:
         src = f"C:{t}.{c}" if c else "T:" + t
-        if src in G:
-            G.add_edge(src, "T:" + tgt, rel="REFERENCES", inferred=False)
+        if src in G and ("T:" + tgt) in G:
+            G.add_edge(src, "T:" + tgt, rel="REFERENCES",
+                       method="explicit_fk", confidence="high")
     nx.write_graphml(G, path)
     print(f"Wrote {path}  ({G.number_of_nodes()} nodes, {G.number_of_edges()} edges)")
 
