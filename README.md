@@ -71,10 +71,18 @@ tags the edge with a method and confidence:
 | `sole_pk` | high | the key has exactly one logical sole-PK owner |
 | `name_stem` | high | an owner's name equals the key's stem (`PAT_ENC_CSN_ID` → `PAT_ENC`) |
 | `overflow_master` | medium | exactly one *name-related* owner itself carries overflow tables (`PAT_ID` → `PATIENT`) |
+| `alias_enc_csn` | low | renamed encounter contact-serial-number, e.g. `ALLERGY_PAT_CSN`, `*_ENC_CSN`, `*_ENC_CSN_ID`, `*_PAT_CSN` → `PAT_ENC` |
+| `alias_pat_id` | low | renamed patient key, `<role>_PAT_ID` → `PATIENT` |
 
-This yields **3,863 reference edges** (vs. 1,076 in the original conservative
-build), and the marquee hubs now surface correctly — top targets are `PATIENT`
-(581), `PAT_ENC` (560), `CLAIM_INFO` (467), `REFERRAL`, `COVERAGE`,
+The last two recover **aliased foreign keys** — columns that point at the master
+but were renamed, which exact matching misses. They are deliberately narrow: a
+bare `*_CSN` is *not* used (CSNs also belong to non-encounter contacts such as
+notes, rooms, beds and care plans), and `*PATIENT_ID` is excluded (those are
+external MPI identifiers, not `PAT_ID` foreign keys).
+
+This yields **4,072 reference edges** (vs. 1,076 in the original conservative
+build), and the marquee hubs now surface correctly — top targets are `PAT_ENC`
+(691), `PATIENT` (659), `CLAIM_INFO` (467), `REFERRAL`, `COVERAGE`,
 `HSP_ACCOUNT`. Edges are written to `data/references.jsonl` for direct querying.
 
 The pass is deliberately **conservative — it under-claims rather than emit wrong
@@ -141,8 +149,10 @@ all structural facts and the org-specific flags.
 - **Reference edges remain inferred, not authoritative.** Epic ships no explicit
   foreign keys, so all `ehi:references` edges are derived (see *Reference
   resolution* above) and should be read together with their
-  `ehi:referenceConfidence`. Medium-confidence (`overflow_master`) edges are
-  heuristic; generic shared keys are intentionally left unresolved.
+  `ehi:referenceConfidence`. `overflow_master` (medium) and the `alias_*` rules
+  (low) are heuristic; the alias rules currently cover only the two anchor
+  entities (encounter, patient), so renamed FKs to *other* masters are not yet
+  resolved. Generic shared keys are intentionally left unresolved.
 - **Composite-key targets** (a column set referencing a multi-column PK) are not
   emitted as edges. The common, useful case — a detail table whose *leading* key
   column points at a master entity — is captured, because that leading column

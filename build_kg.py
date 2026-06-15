@@ -301,14 +301,39 @@ def resolve_references(records):
             continue
         shared_keys[key] = sorted(owners)          # under-claim, do not guess
 
+    # --- curated aliased-FK rules ------------------------------------------- #
+    # Many Epic foreign keys are *renamed* copies of a master key (e.g.
+    # ALLERGY_PAT_CSN -> the encounter's PAT_ENC_CSN_ID), so exact-name matching
+    # misses them. These two high-precision name patterns recover the two anchor
+    # entities (encounter, patient). They are deliberately narrow and marked
+    # low confidence; a bare "*_CSN" is NOT used because CSNs also belong to
+    # non-encounter contacts (notes, rooms, beds, care plans).
+    ENC_CSN_RE = re.compile(r"(_ENC_CSN(_ID)?|_PAT_CSN)$")
+
+    def alias_target(name, ctype):
+        if ("PAT_ENC" in table_names and ctype in ("NUMERIC", "INTEGER")
+                and name != "PAT_ENC_CSN_ID"
+                and (ENC_CSN_RE.search(name) or name == "PAT_CSN")):
+            return "PAT_ENC", "alias_enc_csn", "low"
+        if ("PATIENT" in table_names
+                and name.endswith("_PAT_ID") and name != "PAT_ID"):
+            return "PATIENT", "alias_pat_id", "low"
+        return None
+
     edges = []
     for r in records:
         tbase = logical_of[r["table"]]
         for c in r["columns"]:
-            tgt = master.get(c["name"])
-            if tgt and tgt != tbase:
-                edges.append((r["table"], c["name"], tgt,
-                              method[c["name"]], confidence[c["name"]]))
+            name = c["name"]
+            tgt = master.get(name)
+            if tgt:                                 # structural resolution
+                if tgt != tbase:
+                    edges.append((r["table"], name, tgt,
+                                  method[name], confidence[name]))
+            elif name not in shared_keys:           # try a curated alias
+                a = alias_target(name, c.get("type"))
+                if a and a[0] != tbase:
+                    edges.append((r["table"], name, a[0], a[1], a[2]))
     return edges, shared_keys, families, logical_of
 
 

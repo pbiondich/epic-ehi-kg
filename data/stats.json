@@ -15,26 +15,29 @@
   "overflow_families": 92,
   "overflow_member_tables": 163,
   "logical_tables": 7634,
-  "resolved_reference_edges": 3863,
+  "resolved_reference_edges": 4072,
   "explicit_reference_edges": 0,
   "reference_edges_by_method": {
     "name_stem": 1457,
     "sole_pk": 1220,
-    "overflow_master": 1186
+    "overflow_master": 1186,
+    "alias_enc_csn": 131,
+    "alias_pat_id": 78
   },
   "reference_edges_by_confidence": {
     "high": 2677,
-    "medium": 1186
+    "medium": 1186,
+    "low": 209
   },
   "shared_keys_unresolved": 69,
   "top_referenced_tables": [
     [
-      "PATIENT",
-      581
+      "PAT_ENC",
+      691
     ],
     [
-      "PAT_ENC",
-      560
+      "PATIENT",
+      659
     ],
     [
       "CLAIM_INFO",
