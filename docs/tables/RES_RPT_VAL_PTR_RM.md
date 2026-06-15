@@ -1,0 +1,20 @@
+# RES_RPT_VAL_PTR_RM
+
+> For a given repeat component this holds all the pointers to the table that stores the multi line data.
+
+**Primary key:** `RESULT_ID`, `GROUP_LINE`, `VALUE_LINE`  
+**Columns:** 4
+
+[← index](../index.md)
+
+## Columns
+
+| # | Column | Type | Flags | Description |
+|--:|--------|------|-------|-------------|
+| 1 | `RESULT_ID` | VARCHAR | PK shared | The unique ID of the result record for this row. This column is frequently used to link to the RES_REPEAT_COMP table. |
+| 2 | `GROUP_LINE` | INTEGER | PK | This is the repeat component line number from the RES_REPEAT_COMP table. Use the RESULT_ID to link the RES_REPEAT_COMP table to this table in addition to the GROUP_LINE. |
+| 3 | `VALUE_LINE` | INTEGER | PK | The line number of one of the multiple values that are associated with the component and the result from the RES_VAL_DATA_RM table. This column can be ignored - it is here for completeness. |
+| 4 | `RPT_MULTILINE_VALUE` | NUMERIC |  | Stores a list of lines in OVR-52201 which store data for this line in the component related group. To link tables RES_VAL_PTR_RM to RES_VAL_DATA_RM link the following two sets of columns: - RES_RPT_VAL_PTR_RM.RESULT_ID to RES_VAL_DATA_RM.RESULT_ID, and - RES_RPT_VAL_PTR_RM.RPT_MULTILINE_VALUE to RES_VAL_DATA_RM.GROUP_LINE |
+
+_Flags: PK = primary key · org = may contain organization-specific values · discont. = discontinued · FK→ = inferred reference (see below) · shared = generic key, intentionally unresolved._
+

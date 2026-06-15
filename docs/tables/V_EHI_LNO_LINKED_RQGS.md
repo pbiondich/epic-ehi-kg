@@ -1,0 +1,25 @@
+# V_EHI_LNO_LINKED_RQGS
+
+> Placeholder view for LNO EHI data that needs to be marked as both static and dynamic.
+
+**Primary key:** `RECORD_ID`  
+**Columns:** 3
+
+[← index](../index.md)
+
+## Columns
+
+| # | Column | Type | Flags | Description |
+|--:|--------|------|-------|-------------|
+| 1 | `RECORD_ID` | NUMERIC | PK shared | The unique identifier for the LNO record. |
+| 2 | `GROUPER_ID` | NUMERIC | FK→ | This is the reference lab patient associated with the specimen on the report. |
+| 3 | `CM_LOG_OWNER_ID` | VARCHAR |  | The Community ID (CID) of the instance from which this Chronicles record was extracted. This is populated only if you use IntraConnect. |
+
+_Flags: PK = primary key · org = may contain organization-specific values · discont. = discontinued · FK→ = inferred reference (see below) · shared = generic key, intentionally unresolved._
+
+## Joins out — this table references
+
+| Column | → References | Method | Confidence |
+|--------|--------------|--------|------------|
+| `GROUPER_ID` | [SCHEDULING_GROUPER_INFO](SCHEDULING_GROUPER_INFO.md) | sole_pk | high |
+

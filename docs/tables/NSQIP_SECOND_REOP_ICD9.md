@@ -1,0 +1,20 @@
+# NSQIP_SECOND_REOP_ICD9
+
+> This table contains ICD-9 code and diagnosis description related to the second reoperation.
+
+**Primary key:** `REGISTRY_DATA_ID`, `LINE`  
+**Columns:** 4
+
+[← index](../index.md)
+
+## Columns
+
+| # | Column | Type | Flags | Description |
+|--:|--------|------|-------|-------------|
+| 1 | `REGISTRY_DATA_ID` | NUMERIC | PK shared | The unique identifier (.1 item) for the registry data record. |
+| 2 | `LINE` | INTEGER | PK | The line number for the information associated with this record. Multiple pieces of information can be associated with this record. |
+| 3 | `NSQIP_SEC_REOP_ICD9` | VARCHAR |  | ICD-9 code associated with the second return to the OR. |
+| 4 | `NSQIP_SEC_REOP_DX_DESC` | VARCHAR |  | ICD-9 diagnosis description associated with the second return to the OR. |
+
+_Flags: PK = primary key · org = may contain organization-specific values · discont. = discontinued · FK→ = inferred reference (see below) · shared = generic key, intentionally unresolved._
+

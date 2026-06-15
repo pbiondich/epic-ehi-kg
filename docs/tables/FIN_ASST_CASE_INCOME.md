@@ -1,0 +1,31 @@
+# FIN_ASST_CASE_INCOME
+
+> This table contains income related information of a financial assistance record.
+
+**Primary key:** `FIN_ASST_CASE_ID`, `LINE`  
+**Columns:** 8  
+**Org-specific columns:** 1
+
+[← index](../index.md)
+
+## Columns
+
+| # | Column | Type | Flags | Description |
+|--:|--------|------|-------|-------------|
+| 1 | `FIN_ASST_CASE_ID` | NUMERIC | PK FK→ | The unique identifier for the financial assistance case record. |
+| 2 | `LINE` | INTEGER | PK | The line number for the information associated with this record. Multiple pieces of information can be associated with this record. |
+| 3 | `INCOME_FREQ_C_NAME` | VARCHAR |  | This column stores the category ID of the frequency with which an income type mentioned in INCOME_TYPE_C is earned. |
+| 4 | `INCOME_HOURS_PER_WEEK` | NUMERIC |  | If the income frequency (INCOME_FREQUENCY_C) is hourly, then this column stores the number of hours worked in a week. |
+| 5 | `INCOME_AMOUNT` | NUMERIC |  | The income amount earned per frequency. |
+| 6 | `INCOME_TYPE_C_NAME` | VARCHAR | org | This column stores the category ID of the type of income being earned. |
+| 7 | `INC_BLNG_PAT_RELATIONSHIP_ID` | NUMERIC |  | The patient contact of one of the patients on the case for whom the income information in the current row belongs to. If the information belongs to a patient on the case, INCOME_BELONGS_TO_PAT_ID column will be set instead. |
+| 8 | `INCOME_COMMENT` | VARCHAR |  | A brief comment about the income information in the current row. |
+
+_Flags: PK = primary key · org = may contain organization-specific values · discont. = discontinued · FK→ = inferred reference (see below) · shared = generic key, intentionally unresolved._
+
+## Joins out — this table references
+
+| Column | → References | Method | Confidence |
+|--------|--------------|--------|------------|
+| `FIN_ASST_CASE_ID` | [FIN_ASST_CASE](FIN_ASST_CASE.md) | sole_pk | high |
+

@@ -1,0 +1,18 @@
+# RSH_RESEARCH_INFO
+
+> This table contains information about research study administrative records.
+
+**Primary key:** `RESEARCH_ID`  
+**Columns:** 2
+
+[← index](../index.md)
+
+## Columns
+
+| # | Column | Type | Flags | Description |
+|--:|--------|------|-------|-------------|
+| 1 | `RESEARCH_ID_RESEARCH_STUDY_NAME` | VARCHAR |  | The name of the research study record. |
+| 2 | `RESEARCH_STUDY_NAME` | VARCHAR |  | The name of the research study record. |
+
+_Flags: PK = primary key · org = may contain organization-specific values · discont. = discontinued · FK→ = inferred reference (see below) · shared = generic key, intentionally unresolved._
+

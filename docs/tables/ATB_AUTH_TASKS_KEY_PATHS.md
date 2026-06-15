@@ -1,0 +1,20 @@
+# ATB_AUTH_TASKS_KEY_PATHS
+
+> Related-multi table containing the error source primary keys for auth tasks.
+
+**Primary key:** `AUTH_BUNDLE_ID`, `GROUP_LINE`, `VALUE_LINE`  
+**Columns:** 4
+
+[← index](../index.md)
+
+## Columns
+
+| # | Column | Type | Flags | Description |
+|--:|--------|------|-------|-------------|
+| 1 | `AUTH_BUNDLE_ID` | NUMERIC | PK shared | The unique identifier (.1 item) for the auth bundle record. |
+| 2 | `GROUP_LINE` | INTEGER | PK | The line number for the information associated with this record. |
+| 3 | `VALUE_LINE` | INTEGER | PK | The line number of one of the multiple values associated with a specific group of data within this record. |
+| 4 | `DATAVALIDATION_SOURCE_KEY_PATH` | VARCHAR |  | If the source item for a given fix action line within a task is either in a related group or requires stepping through a related group from the root Auth ATB, such as the requested count on a service line ATB, then this item will store the "key path" that can be used to traverse that structure. |
+
+_Flags: PK = primary key · org = may contain organization-specific values · discont. = discontinued · FK→ = inferred reference (see below) · shared = generic key, intentionally unresolved._
+

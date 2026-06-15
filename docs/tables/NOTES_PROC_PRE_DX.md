@@ -1,0 +1,20 @@
+# NOTES_PROC_PRE_DX
+
+> This table contains a list of preoperative diagnoses for ambulatory procedure notes.
+
+**Primary key:** `NOTE_ID`, `CONTACT_DATE_REAL`, `LINE`  
+**Columns:** 4
+
+[← index](../index.md)
+
+## Columns
+
+| # | Column | Type | Flags | Description |
+|--:|--------|------|-------|-------------|
+| 1 | `NOTE_ID` | VARCHAR | PK shared | The unique ID of the note. |
+| 2 | `CONTACT_DATE_REAL` | FLOAT | PK | A unique, internal contact date in decimal format. The integer portion of the number indicates the date of the contact. The digits after the decimal distinguish different contacts on the same date and are unique for each contact on that date. For example, .00 is the first/only contact, .01 is the second contact, etc. |
+| 3 | `LINE` | INTEGER | PK | The line number for the information associated with this contact. Multiple pieces of information can be associated with this contact. |
+| 4 | `PROC_NOTE_PRE_DX_DX_NAME` | VARCHAR |  | The name of the diagnosis. |
+
+_Flags: PK = primary key · org = may contain organization-specific values · discont. = discontinued · FK→ = inferred reference (see below) · shared = generic key, intentionally unresolved._
+

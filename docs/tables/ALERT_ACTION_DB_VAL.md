@@ -1,0 +1,21 @@
+# ALERT_ACTION_DB_VAL
+
+> This table contains debug details on the actions seen or taken by the alert.
+
+**Primary key:** `ALERT_ID`, `CONTACT_DATE_REAL`, `GROUP_LINE`, `VALUE_LINE`  
+**Columns:** 5
+
+[← index](../index.md)
+
+## Columns
+
+| # | Column | Type | Flags | Description |
+|--:|--------|------|-------|-------------|
+| 1 | `ALERT_ID` | NUMERIC | PK shared | The unique identifier (.1 item) for the alert record. |
+| 2 | `CONTACT_DATE_REAL` | FLOAT | PK | A unique contact date in decimal format. The integer portion of the number indicates the date of contact. The digits after the decimal distinguish different contacts on the same date and are unique for each contact on that date. For example, .00 is the first/only contact, .01 is the second contact, etc. |
+| 3 | `GROUP_LINE` | INTEGER | PK | The line number of the detailed action for the alert. Together with ALERT_ID and CONTACT_DATE_REAL, this forms the foreign key to the ALERT_ACTION table. |
+| 4 | `VALUE_LINE` | INTEGER | PK | The line number of one of the multiple debug values associated with the alert action from the ALERT_ACTION table. |
+| 5 | `CONTACT_DATE` | DATETIME |  | The date of this contact in calendar format. |
+
+_Flags: PK = primary key · org = may contain organization-specific values · discont. = discontinued · FK→ = inferred reference (see below) · shared = generic key, intentionally unresolved._
+

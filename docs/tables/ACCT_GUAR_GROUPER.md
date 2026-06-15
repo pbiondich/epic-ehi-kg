@@ -1,0 +1,27 @@
+# ACCT_GUAR_GROUPER
+
+> This table contains information about the requisition grouper patient and their relationship to the guarantor on the account.
+
+**Primary key:** `ACCT_ID`, `LINE`  
+**Columns:** 4  
+**Org-specific columns:** 1
+
+[← index](../index.md)
+
+## Columns
+
+| # | Column | Type | Flags | Description |
+|--:|--------|------|-------|-------------|
+| 1 | `ACCT_ID` | NUMERIC | PK shared | The unique identifier (.1 item) for the account record. |
+| 2 | `LINE` | INTEGER | PK | The line number for the information associated with this record. Multiple pieces of information can be associated with this record. |
+| 3 | `GROUPER_ID` | NUMERIC | discont. FK→ | The unique ID of the requisition grouper patient associated with this account. This is legacy data that is no longer populated. |
+| 4 | `GUAR_REL_TO_PAT_C_NAME` | VARCHAR | org discont. | The guarantor relationship to requisition grouper patient category ID for the account. This is legacy data that is no longer populated. |
+
+_Flags: PK = primary key · org = may contain organization-specific values · discont. = discontinued · FK→ = inferred reference (see below) · shared = generic key, intentionally unresolved._
+
+## Joins out — this table references
+
+| Column | → References | Method | Confidence |
+|--------|--------------|--------|------------|
+| `GROUPER_ID` | [SCHEDULING_GROUPER_INFO](SCHEDULING_GROUPER_INFO.md) | sole_pk | high |
+

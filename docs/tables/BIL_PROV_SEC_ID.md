@@ -1,0 +1,21 @@
+# BIL_PROV_SEC_ID
+
+> All values associated with a claim are stored in the Claim External Value record. The BIL_PROV_SEC_ID table holds secondary (legacy) identifiers for the billing provider.
+
+**Primary key:** `RECORD_ID`, `LINE`  
+**Columns:** 5
+
+[← index](../index.md)
+
+## Columns
+
+| # | Column | Type | Flags | Description |
+|--:|--------|------|-------|-------------|
+| 1 | `RECORD_ID` | NUMERIC | PK shared | The unique identifier for the claim record. |
+| 2 | `LINE` | INTEGER | PK | The line number for the information associated with this contact. Multiple pieces of information can be associated with this contact. |
+| 3 | `BIL_PROV_SEC_QUAL` | VARCHAR |  | This item holds the qualifier for the billing provider secondary ID. It is used on both electronic and paper claims. |
+| 4 | `BIL_PROV_SEC_ID` | VARCHAR |  | This item holds the billing provider secondary ID for the current payor. It is used on both electronic and paper claims. |
+| 5 | `BIL_PROV_SEC_QUAL_OID` | VARCHAR |  | The ID for the list of possible billing provider ID types. |
+
+_Flags: PK = primary key · org = may contain organization-specific values · discont. = discontinued · FK→ = inferred reference (see below) · shared = generic key, intentionally unresolved._
+

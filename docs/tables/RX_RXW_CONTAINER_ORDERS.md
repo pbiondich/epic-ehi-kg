@@ -1,0 +1,19 @@
+# RX_RXW_CONTAINER_ORDERS
+
+> This table contains information pertaining to the orders within a container created in a pharmacy.
+
+**Primary key:** `RECORD_ID`, `LINE`  
+**Columns:** 3
+
+[← index](../index.md)
+
+## Columns
+
+| # | Column | Type | Flags | Description |
+|--:|--------|------|-------|-------------|
+| 1 | `RECORD_ID` | NUMERIC | PK shared | The unique identifier (.1 item) for the work request record. |
+| 2 | `LINE` | INTEGER | PK | The line number for the information associated with this record. Multiple pieces of information can be associated with this record. |
+| 3 | `ORDER_ID` | NUMERIC | shared | This column contains the collection of prescription fill order IDs associated with packaging containers. |
+
+_Flags: PK = primary key · org = may contain organization-specific values · discont. = discontinued · FK→ = inferred reference (see below) · shared = generic key, intentionally unresolved._
+

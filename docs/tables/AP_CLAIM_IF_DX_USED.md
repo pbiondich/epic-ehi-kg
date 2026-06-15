@@ -1,0 +1,31 @@
+# AP_CLAIM_IF_DX_USED
+
+> The diagnosis code(s) that was used during processing; may be the entered or the mapped code.
+
+**Primary key:** `CLAIM_ID`, `GROUP_LINE`, `VALUE_LINE`  
+**Columns:** 9
+
+[← index](../index.md)
+
+## Columns
+
+| # | Column | Type | Flags | Description |
+|--:|--------|------|-------|-------------|
+| 1 | `CLAIM_ID` | NUMERIC | PK FK→ | The unique identifier for the claim info record. |
+| 2 | `GROUP_LINE` | INTEGER | PK | The line number for the information associated with this record. |
+| 3 | `VALUE_LINE` | INTEGER | PK | The line number of one of the multiple values associated with a specific group of data within this record. |
+| 4 | `DX_USED` | VARCHAR |  | The diagnosis code used during processing; may be the entered or the mapped code. |
+| 5 | `DX_USED_1` | VARCHAR |  | The first diagnosis code that was used during processing. |
+| 6 | `DX_USED_2` | VARCHAR |  | The second diagnosis code that was used during processing. |
+| 7 | `DX_USED_3` | VARCHAR |  | The third diagnosis code that was used during processing. |
+| 8 | `DX_USED_4` | VARCHAR |  | The fourth diagnosis code that was used during processing. |
+| 9 | `DX_USED_5` | VARCHAR |  | The fifth diagnosis code that was used during processing. |
+
+_Flags: PK = primary key · org = may contain organization-specific values · discont. = discontinued · FK→ = inferred reference (see below) · shared = generic key, intentionally unresolved._
+
+## Joins out — this table references
+
+| Column | → References | Method | Confidence |
+|--------|--------------|--------|------------|
+| `CLAIM_ID` | [CLAIM_INFO](CLAIM_INFO.md) | overflow_master | medium |
+

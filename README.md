@@ -113,6 +113,17 @@ This is the query-planning layer for downstream natural-language tooling: resolv
 a question to tables/columns and a join path first, then (later) execute against a
 Clarity/Caboodle SQL instance or a loaded EHI export.
 
+## Data dictionary (markdown)
+
+A browsable markdown rendering lives in [`docs/`](docs/index.md) — a per-table
+page (columns, types, flags, primary key, joins in/out, overflow family) plus an
+A–Z index, all cross-linked and rendered natively on GitHub. Regenerate it from
+the `data/` files with:
+
+```bash
+python build_docs.py --out .
+```
+
 ## Rebuild
 
 ```bash

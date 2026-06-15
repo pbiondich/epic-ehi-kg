@@ -1,0 +1,36 @@
+# SNAPSHOT_ORDERS
+
+> The SNAPSHOT_ORDERS table contains information about the medication orders that were active on the patient at the time of discharge and when the patient's After Visit Summary report was printed.
+
+**Primary key:** `EVENT_ID`, `LINE`  
+**Columns:** 14
+
+[← index](../index.md)
+
+## Columns
+
+| # | Column | Type | Flags | Description |
+|--:|--------|------|-------|-------------|
+| 1 | `EVENT_ID` | VARCHAR | PK FK→ | The unique ID for the event record. |
+| 2 | `LINE` | INTEGER | PK | The line number for the information associated with this record. Multiple pieces of information can be associated with this record. |
+| 3 | `SNAPSHOT_ORD_ID` | NUMERIC |  | The unique ID of an order in the snapshot. This column is frequently used to link to the ORDER_MED table. |
+| 4 | `SNAPSHOT_EVENT_LINE` | INTEGER |  | Identifies which snapshot this row corresponds to for a given discharge event. This value can be used for joining table SNAPSHOT_ORDERS with table ED_IEV_EVENT_INFO. To do this, make your join criteria (SNAPSHOT_ORDERS.EVENT_ID = ED_IEV_EVENT_INFO.EVENT_ID) and (SNAPSHOT_ORDERS.SNAPSHOT_EVENT_LINE = ED_IEV_EVENT_INFO.LINE). |
+| 5 | `SNAPSHOT_DISP_C_NAME` | VARCHAR |  | The order discharge disposition category ID for the event record, indicating how an order was classified at the time of the snapshot. The disposition (e.g. start, continue, modify, or stop) is used to instruct the patient how to take the medication after the visit. |
+| 6 | `SNAPSHOT_UNREV_YN` | VARCHAR |  | Indicates whether the order was not reviewed by a clinician at the time of the snapshot. 'Y' indicates that the medication was not reviewed by a clinician performing medication reconciliation for a patient's discharge from the hospital. 'N' indicates that the medication was reviewed while reconciling medications for discharge. |
+| 7 | `SNAPSHOT_ORD_FREQ_C_NAME` | VARCHAR |  | Stores the classification of an order's frequency (scheduled, PRN and other): * A value of 1 indicates that it is a scheduled medication (i.e. dosed at a certain time interval). * A value of 2 indicates that it is continuous medication. * A value of 3 indicates that it is a PRN medication (i.e., a medication that should be taken as needed). * A value of 4 indicates that this medication has no frequency. |
+| 8 | `SNAPSHOT_ORD_DUP` | INTEGER |  | Stores the duplicate group number for duplicate orders. If the medication does not have a duplicate this value will be null; otherwise it will be an arbitrary group number that is shared between all the same duplicates. |
+| 9 | `SNAPSHOT_ORD_PHR_ID` | NUMERIC |  | The unique ID of the pharmacy to which the prescription was sent. This column is frequently used to link to the RX_PHR table. Since the meaning of this column is slightly different depending on the value in column SNAP_ORD_PHR_FLG_C, its value is used in conjunction with column SNAP_ORD_PHR_FLG_C. |
+| 10 | `SNAPSHOT_ORD_PHR_ID_PHARMACY_NAME` | VARCHAR |  | The name of the pharmacy. |
+| 11 | `SNAP_ORD_PHR_FLG_C_NAME` | VARCHAR |  | This column stores the pharmacy ID for how the patient will obtain the medication. A value of “0” indicates that the patient needs to go to the specific pharmacy listed in column SNAPSHOT_ORD_PHR_ID. A value of “1” indicates that information about where to get the medication was not available at the time that the snapshot was taken. A value of “2” indicates that the patient can go to any pharmacy to pick up the medication. (For example, if the medication is available over the counter.) A value of “3” indicates that the medication will be mailed to the patient. In this case, the pharmacy listed in column SNAPSHOT_ORD_PHR_ID is the source pharmacy. |
+| 12 | `SNAP_ORD_HIST_YN` | VARCHAR |  | Indicates whether the order is an historical medication order. A value of "Y" means that the order is an historical medication order. A value of "N" means that the order is not an historical medication order--for example, it could be a prescription in Epic. A null value means that the information has not been recorded. |
+| 13 | `SNAPSHOT_NO_REV_YN` | VARCHAR |  | Stores whether the order had been reviewed and did not require review for discharge at the time of the snapshot. This item is used in the new snapshot format used after the 2010 release. |
+| 14 | `SNAPSHOT_SORT_POSITION` | INTEGER |  | A number from 1 to the number of orders in the snapshot that indicates where the order belongs in the sort sequence. |
+
+_Flags: PK = primary key · org = may contain organization-specific values · discont. = discontinued · FK→ = inferred reference (see below) · shared = generic key, intentionally unresolved._
+
+## Joins out — this table references
+
+| Column | → References | Method | Confidence |
+|--------|--------------|--------|------------|
+| `EVENT_ID` | [EVENT](EVENT.md) | name_stem | high |
+
