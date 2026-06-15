@@ -1,0 +1,113 @@
+{
+  "tables": 7797,
+  "columns_total": 63956,
+  "avg_columns_per_table": 8.2,
+  "largest_table": [
+    "UNOS_CLINICAL_INFO",
+    257
+  ],
+  "columns_org_specific": 5597,
+  "pct_columns_org_specific": 8.8,
+  "tables_with_org_specific_col": 2565,
+  "columns_discontinued": 41,
+  "tables_with_composite_pk": 6740,
+  "tables_with_explicit_fk_section": 0,
+  "inferred_reference_edges": 1076,
+  "explicit_reference_edges": 0,
+  "top_referenced_tables": [
+    [
+      "CLARITY_EMP",
+      88
+    ],
+    [
+      "HSP_BFH_ACTIVITY",
+      38
+    ],
+    [
+      "MYC_MESG",
+      37
+    ],
+    [
+      "ENROLL_INFO",
+      35
+    ],
+    [
+      "CL_QANSWER",
+      34
+    ],
+    [
+      "FIN_ASST_CASE",
+      32
+    ],
+    [
+      "OR_PNDS",
+      29
+    ],
+    [
+      "CL_PAT_EDU_NS",
+      25
+    ],
+    [
+      "MYC_CONVO",
+      23
+    ],
+    [
+      "AUTH_REQUEST",
+      22
+    ],
+    [
+      "BDC_INFO",
+      22
+    ],
+    [
+      "ADVERSE_EVENT_INFO",
+      19
+    ],
+    [
+      "PAT_RELATIONSHIP_LIST",
+      18
+    ],
+    [
+      "IP_FLWSHT_REC",
+      18
+    ],
+    [
+      "VARIANT",
+      18
+    ]
+  ],
+  "top_data_types": [
+    [
+      "VARCHAR",
+      32974
+    ],
+    [
+      "NUMERIC",
+      12822
+    ],
+    [
+      "INTEGER",
+      10298
+    ],
+    [
+      "DATETIME",
+      3744
+    ],
+    [
+      "FLOAT",
+      1550
+    ],
+    [
+      "DATETIME (UTC)",
+      1229
+    ],
+    [
+      "DATETIME (Local)",
+      1151
+    ],
+    [
+      "DATETIME (Attached)",
+      188
+    ]
+  ]
+}

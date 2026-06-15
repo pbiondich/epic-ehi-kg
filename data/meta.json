@@ -1,0 +1,11 @@
+{
+  "source": "https://open.epic.com/EHITables (EHI Export Specification)",
+  "docgen_folder": "DocGen_su118s2p_2026-06-14_09.40.01",
+  "docgen_token": "su118s2p",
+  "docgen_timestamp": "2026-06-14_09.40.01",
+  "released_version": "May 2026",
+  "parsed_at": "2026-06-15T15:13:10.399203+00:00",
+  "n_tables": 7797,
+  "n_columns": 63956,
+  "descriptions_in_graph": true
+}
