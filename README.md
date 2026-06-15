@@ -9,9 +9,11 @@ This repo turns ~7,800 HTML documentation pages into:
 - a flat **structured dataset** (`data/schema.jsonl`),
 - an **RDF / Turtle** knowledge graph (`graph/epic_ehi.ttl`) for SPARQL and for
   linking Epic columns to external vocabularies (OMOP, FHIR, LOINC, SNOMED,
-  OpenMRS/CIEL), and
+  OpenMRS/CIEL),
 - a **GraphML** property graph (`graph/epic_ehi.graphml`) for Neo4j, Gephi, or
-  Cytoscape exploration.
+  Cytoscape exploration, and
+- a **browsable markdown data dictionary** ([`docs/`](docs/index.md)) — one
+  cross-linked page per table — for reading the schema directly on GitHub.
 
 ## Source & version
 
@@ -115,10 +117,36 @@ Clarity/Caboodle SQL instance or a loaded EHI export.
 
 ## Data dictionary (markdown)
 
-A browsable markdown rendering lives in [`docs/`](docs/index.md) — a per-table
-page (columns, types, flags, primary key, joins in/out, overflow family) plus an
-A–Z index, all cross-linked and rendered natively on GitHub. Regenerate it from
-the `data/` files with:
+A browsable markdown rendering of the whole graph lives in [`docs/`](docs/index.md)
+and renders natively on GitHub — no tooling needed to read the schema.
+
+```
+docs/
+├── index.md            # stats, top hubs, and an A–Z index of all 7,797 tables
+└── tables/
+    ├── PATIENT.md       # one page per table (7,797 files)
+    ├── PAT_ENC.md
+    └── …
+```
+
+[`docs/index.md`](docs/index.md) is the entry point: summary counts, the 25
+most-referenced hub tables, and an alphabetical index linking to every table page.
+
+Each `docs/tables/<TABLE>.md` page contains:
+
+- the table's **description** and **primary key**, plus its **overflow family**
+  (base ↔ `_2`/`_3`/… members, cross-linked);
+- a **column table** — ordinal, name, type, description, and flags: `PK`
+  (primary key), `org` (may contain organization-specific values), `discont.`
+  (discontinued), `FK→` (inferred reference), `shared` (generic key left
+  unresolved);
+- **Joins out** — every column that references another table, with the resolution
+  `method` and `confidence`, each target linked to its page;
+- **Joins in** — every column elsewhere that references this table (capped at 300
+  per page, with a pointer to `data/references.jsonl` for the full set).
+
+The pages are *generated* from the `data/` files — they are derived artifacts, so
+edit the data/builder, not the markdown. Regenerate (≈0.3 s) with:
 
 ```bash
 python build_docs.py --out .
