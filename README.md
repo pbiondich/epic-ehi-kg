@@ -81,6 +81,30 @@ The pass is deliberately **conservative — it under-claims rather than emit wro
 edges.** Use `--no-resolve-references` to fall back to the original single-PK
 inference.
 
+## Querying the graph
+
+`query_kg.py` is a small query layer over the resolved graph — a structure /
+join-planning interface (it answers "where does X live" and "how do I join A to
+B", **not** patient-data questions; the graph holds the schema, not the rows).
+
+```bash
+python query_kg.py search weight bmi            # columns matching keywords (name + description)
+python query_kg.py table PAT_ENC                # profile: PK, org-specific cols, joins in/out
+python query_kg.py refs-to PATIENT              # every column that joins to PATIENT
+python query_kg.py refs-from IP_FLWSHT_MEAS     # what this table joins to
+python query_kg.py path IP_FLWSHT_MEAS PATIENT  # shortest join path between two tables
+```
+
+Example — the join path from a flowsheet measurement to the patient:
+
+```
+IP_FLWSHT_MEAS  --FSD_ID-->  IP_FLWSHT_REC  --PAT_ID-->  PATIENT
+```
+
+This is the query-planning layer for downstream natural-language tooling: resolve
+a question to tables/columns and a join path first, then (later) execute against a
+Clarity/Caboodle SQL instance or a loaded EHI export.
+
 ## Rebuild
 
 ```bash
